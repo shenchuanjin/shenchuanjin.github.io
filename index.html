@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Document</title>
+  <title>题目小练习</title>
   <style>
     * {
       outline: 0
@@ -136,6 +136,8 @@
       display: none;
       font-size: 18px;
       font-weight: 600;
+      color: #4187f2;
+      margin-left: 4px;
     }
 
     i {
@@ -183,7 +185,7 @@
       }
       let str = ''
       list.forEach((item, index) => {
-        str += `<div class='item'><i>${index + 1}.</i><span>${item.a}</span>X<span>${item.b}</span>=<em>${item.c}</em></div>`
+        str += `<div class='item'><i>${index + 1}.</i><span>${item.a}</span>X<span>${item.b}</span>= <em>${item.c}</em></div>`
       })
       view.innerHTML = str;
       localStorage.setItem('list', JSON.stringify(list));
