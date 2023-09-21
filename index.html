@@ -1,64 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Document</title>
   <style>
-    span{
-      padding: 20px;
+    * {
+      outline: 0
     }
-    span:nth-of-type(3){
-      display: none;
+
+    blockquote,
+    body,
+    button,
+    dd,
+    dl,
+    dt,
+    fieldset,
+    form,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    hr,
+    input,
+    legend,
+    li,
+    ol,
+    p,
+    pre,
+    td,
+    textarea,
+    th,
+    ul {
+      margin: 0;
+      padding: 0;
+      vertical-align: baseline
     }
-    .item { 
+
+    img {
+      border: 0;
+      vertical-align: top
+    }
+
+    em,
+    i {
+      font-style: normal
+    }
+
+    ol,
+    ul {
+      list-style: none
+    }
+
+    button,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    input,
+    select {
+      font-size: 100%;
+      font-family: inherit
+    }
+
+    table {
+      border-collapse: collapse;
+      border-spacing: 0
+    }
+
+    a,
+    a:visited {
+      text-decoration: none;
+      color: #333
+    }
+
+    body {
+      margin: 0 auto;
+      min-width: 320px;
+      max-width: 540px;
+      background: #fff;
+      font-size: 14px;
+      font-family: -apple-system, Helvetica, sans-serif;
+      line-height: 1.5;
+      color: #666;
+      -webkit-text-size-adjust: 100% !important;
+      padding-bottom: env(safe-area-inset-bottom)
+    }
+
+
+
+    .btn {
+      width: 100vw;
+      height: 50px;
+      position: fixed;
+      background-color: skyblue;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+    }
+
+    button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .item {
+      width: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+
+    #view {
+      padding-top: 60px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    span {
+      padding: 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    em {
+      display: none;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    i {
+      font-size: 18px;
+      color: red;
+    }
   </style>
 </head>
+
 <body>
+  <div class="btn">
+    <button>生成题目</button>
+    <button>查看结果</button>
+    <button>重置清空</button>
+  </div>
+
   <div id="view"></div>
-  <button>生产</button>
-  <button>结果</button>
-  <video webkit-playsinline playsinline preload="metadata" src="blob:https://m.whqrwb.com/0235a9d9-5f4f-4820-a46f-9fa375c9a581"></video>
   <script>
     let view = document.querySelector('#view');
     let btns = document.querySelectorAll('button')
     let spans = document.querySelectorAll('span')
-    console.log(btns)
-    let list = [];
-    btns[0].onclick = function(){
-      for(let i = 0;i<20;i++){
-        let random =  Math.random().toString(10).slice(2,6)
-        let ran=  Math.random().toString(10).slice(2,3)
-        if(random[0]== 0){
-          random = random*1 + Math.ceil(Math.random()*1000000000%9)*1000
-        }
-        if(ran[0] == 0){
-          ran = ran*1 + Math.ceil(Math.random()*1000000000%9)
+
+    console.log(JSON.parse(localStorage.getItem('list')))
+    let list = JSON.parse(localStorage.getItem('list')) ? JSON.parse(localStorage.getItem('list')) : [];
+
+    let flag = true;
+    if (list.length > 0) {
+      let str = ''
+      list.forEach((item, index) => {
+        str += `<div class='item'><i>${index + 1}.</i><span>${item.a}</span>X<span>${item.b}</span>=<em>${item.c}</em></div>`
+        view.innerHTML = str;
+      })
+
+    }
+    btns[0].onclick = function () {
+      if (list.length > 0) return
+      for (let i = 0; i < 20; i++) {
+        let random = Math.random().toString(10).slice(2, 6)
+        let ran = Math.ceil((Math.random() * (9 - 3 + 1)) + 3 - 1);
+        if (random[0] == 0) {
+          random = random * 1 + Math.ceil(Math.random() * 1000000000 % 9) * 1000
         }
         console.log(random)
-        list.push({a:random,b:ran,c:random*ran})
+        list.push({ a: random, b: ran, c: random * ran })
       }
       let str = ''
-      list.forEach(item =>{
-      str+=`<div class='item'><span>${item.a}</span>X<span>${item.b}</span>=<span>${item.c}</span></div>`
-    })
-    view.innerHTML = str
+      list.forEach((item, index) => {
+        str += `<div class='item'><i>${index + 1}.</i><span>${item.a}</span>X<span>${item.b}</span>=<em>${item.c}</em></div>`
+      })
+      view.innerHTML = str;
+      localStorage.setItem('list', JSON.stringify(list));
     }
 
-    btns[1].onclick = function(){
-      let spans = document.querySelectorAll('span')
-      for(let i = 0;i<spans.length;i++){
-        spans[i].style.cssText = "display:block" 
+    btns[1].onclick = function () {
+      let spans = document.querySelectorAll('em')
+      if (flag) {
+        for (let i = 0; i < spans.length; i++) {
+          spans[i].style.cssText = "display:block"
+        }
+        flag = false;
+      } else {
+        for (let i = 0; i < spans.length; i++) {
+          spans[i].style.cssText = "display:none"
+        }
+        flag = true;
       }
+
     }
 
-    const objectURL = URL.createObjectURL('blob:https://m.whqrwb.com/0235a9d9-5f4f-4820-a46f-9fa375c9a581')
-    console.log(objectURL,'obj')
-   
+    btns[2].onclick = function () {
+      list = [];
+      localStorage.removeItem('list')
+      location.reload()
+    }
+
   </script>
 </body>
+
 </html>
