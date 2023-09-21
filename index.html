@@ -1,8 +1,64 @@
-<html>
-  <head>
-    <title>沈传进的网站</title>
-  </head>
-  <body>
-    <div>王家乐是傻子</div>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    span{
+      padding: 20px;
+    }
+    span:nth-of-type(3){
+      display: none;
+    }
+    .item { 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="view"></div>
+  <button>生产</button>
+  <button>结果</button>
+  <video webkit-playsinline playsinline preload="metadata" src="blob:https://m.whqrwb.com/0235a9d9-5f4f-4820-a46f-9fa375c9a581"></video>
+  <script>
+    let view = document.querySelector('#view');
+    let btns = document.querySelectorAll('button')
+    let spans = document.querySelectorAll('span')
+    console.log(btns)
+    let list = [];
+    btns[0].onclick = function(){
+      for(let i = 0;i<20;i++){
+        let random =  Math.random().toString(10).slice(2,6)
+        let ran=  Math.random().toString(10).slice(2,3)
+        if(random[0]== 0){
+          random = random*1 + Math.ceil(Math.random()*1000000000%9)*1000
+        }
+        if(ran[0] == 0){
+          ran = ran*1 + Math.ceil(Math.random()*1000000000%9)
+        }
+        console.log(random)
+        list.push({a:random,b:ran,c:random*ran})
+      }
+      let str = ''
+      list.forEach(item =>{
+      str+=`<div class='item'><span>${item.a}</span>X<span>${item.b}</span>=<span>${item.c}</span></div>`
+    })
+    view.innerHTML = str
+    }
+
+    btns[1].onclick = function(){
+      let spans = document.querySelectorAll('span')
+      for(let i = 0;i<spans.length;i++){
+        spans[i].style.cssText = "display:block" 
+      }
+    }
+
+    const objectURL = URL.createObjectURL('blob:https://m.whqrwb.com/0235a9d9-5f4f-4820-a46f-9fa375c9a581')
+    console.log(objectURL,'obj')
+   
+  </script>
+</body>
 </html>
