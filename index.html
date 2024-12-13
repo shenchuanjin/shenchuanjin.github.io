@@ -1,84 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>语音通话示例</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Local Test</title>
 </head>
+
 <body>
-    <h1>语音通话示例</h1>
-    <button id="start-call">开始通话</button>
-    <button id="end-call" disabled>结束通话</button>
-    <h2>语音输入:</h2>
-    <audio id="audio" controls autoplay></audio>
+  <h2>Local User</h2>
+  <audio id="localAudio" controls autoplay></audio>
+  <h2>Remote User</h2>
+  <audio id="remoteAudio" controls autoplay></audio>
 
-    <script>
-        let localStream;
-        let peerConnection;
-        const startCallButton = document.getElementById("start-call");
-        const endCallButton = document.getElementById("end-call");
-        const audioElement = document.getElementById("audio");
+  <script>
+    const localAudio = document.getElementById("localAudio");
+    const remoteAudio = document.getElementById("remoteAudio");
 
-        // 获取用户的音频流
-        async function startUserMedia() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log("音频流获取成功");
-                startCallButton.disabled = true;
-                endCallButton.disabled = false;
-            } catch (err) {
-                console.error("获取音频流失败", err);
-            }
-        }
+    // 获取本地音频流
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(localStream => {
+        // 显示本地音频流
+        localAudio.srcObject = localStream;
 
-        // 设置Peer Connection并建立音频通话
-        function createPeerConnection() {
-            peerConnection = new RTCPeerConnection();
+        // 创建本地 PeerConnection
+        const localPeerConnection = new RTCPeerConnection();
+        localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
 
-            // 将本地音频流添加到连接中
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-                console.log("添加本地音频轨道:", track);
-            });
+        // 创建远程 PeerConnection
+        const remotePeerConnection = new RTCPeerConnection();
 
-            // 当接收到远端音频流时，将其设置为audio标签的源
-            peerConnection.ontrack = function(event) {
-                console.log("接收到远程音频流", event);
-                audioElement.srcObject = event.streams[0];
-            };
+        // 当远程音频流到来时，设置远程音频源
+        remotePeerConnection.ontrack = (event) => {
+          remoteAudio.srcObject = event.streams[0];
+        };
 
-            // 处理ICE候选
-            peerConnection.onicecandidate = function(event) {
-                if (event.candidate) {
-                    console.log("发现ICE候选:", event.candidate);
-                    // 这里通常会通过信令服务器发送ICE候选
-                }
-            };
-        }
+        // 信令部分：通过 localStorage 模拟信令交换
+        window.localStorage.setItem('localStream', localStream);
 
-        // 启动通话
-        startCallButton.addEventListener("click", async () => {
-            await startUserMedia();
-            createPeerConnection();
+        // 生成 offer
+        localPeerConnection.createOffer()
+          .then(offer => {
+            return localPeerConnection.setLocalDescription(offer);
+          })
+          .then(() => {
+            // 等待远端 answer
+            window.localStorage.setItem('offer', JSON.stringify(localPeerConnection.localDescription));
+          });
 
-            // 这里你应该与另一个用户交换SDP信息，并建立连接
-            // 这通常涉及通过信令服务器来交换offer/answer等信息
+        // 当 offer 被设置时，设置远端 SDP
+        window.addEventListener("storage", (event) => {
+          if (event.key === "offer" && !localPeerConnection.currentRemoteDescription) {
+            const offer = JSON.parse(localStorage.getItem('offer'));
+            remotePeerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+              .then(() => remotePeerConnection.createAnswer())
+              .then(answer => remotePeerConnection.setLocalDescription(answer))
+              .then(() => {
+                window.localStorage.setItem('answer', JSON.stringify(remotePeerConnection.localDescription));
+              });
+          }
+
+          // 当 answer 被设置时，设置本地 SDP
+          if (event.key === "answer") {
+            const answer = JSON.parse(localStorage.getItem('answer'));
+            localPeerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+          }
         });
 
-        // 结束通话
-        endCallButton.addEventListener("click", () => {
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            startCallButton.disabled = false;
-            endCallButton.disabled = true;
-            audioElement.srcObject = null;
-        });
-    </script>
+        // 交换 ICE候选
+        localPeerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            remotePeerConnection.addIceCandidate(event.candidate);
+          }
+        };
+
+        remotePeerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            localPeerConnection.addIceCandidate(event.candidate);
+          }
+        };
+      })
+      .catch(error => {
+        console.error("获取音频设备失败:", error);
+      });
+
+  </script>
 </body>
+
 </html>
