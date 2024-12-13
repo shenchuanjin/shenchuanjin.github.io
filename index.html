@@ -7,11 +7,8 @@
 </head>
 <body>
     <h1>语音通话示例</h1>
-
-    <!-- 按钮来启动和停止通话 -->
     <button id="start-call">开始通话</button>
     <button id="end-call" disabled>结束通话</button>
-
     <h2>语音输入:</h2>
     <audio id="audio" controls autoplay></audio>
 
@@ -26,7 +23,7 @@
         async function startUserMedia() {
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log("音频流获取成功",localStream);
+                console.log("音频流获取成功");
                 startCallButton.disabled = true;
                 endCallButton.disabled = false;
             } catch (err) {
@@ -37,14 +34,16 @@
         // 设置Peer Connection并建立音频通话
         function createPeerConnection() {
             peerConnection = new RTCPeerConnection();
-          console.log('fsfsfs')
+
             // 将本地音频流添加到连接中
             localStream.getTracks().forEach(track => {
                 peerConnection.addTrack(track, localStream);
+                console.log("添加本地音频轨道:", track);
             });
 
             // 当接收到远端音频流时，将其设置为audio标签的源
             peerConnection.ontrack = function(event) {
+                console.log("接收到远程音频流", event);
                 audioElement.srcObject = event.streams[0];
             };
 
@@ -63,7 +62,7 @@
             createPeerConnection();
 
             // 这里你应该与另一个用户交换SDP信息，并建立连接
-            // 这通常涉及通过WebSocket或其他信令协议来交换offer/answer等信息
+            // 这通常涉及通过信令服务器来交换offer/answer等信息
         });
 
         // 结束通话
