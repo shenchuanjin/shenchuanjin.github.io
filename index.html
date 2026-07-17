@@ -1,90 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebRTC Local Test</title>
-</head>
-
-<body>
-  <h2>Local User</h2>
-  <audio id="localAudio" controls autoplay></audio>
-  <h2>Remote User</h2>
-  <audio id="remoteAudio" controls autoplay></audio>
-
-  <script>
-    const localAudio = document.getElementById("localAudio");
-    const remoteAudio = document.getElementById("remoteAudio");
-
-    // 获取本地音频流
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(localStream => {
-        // 显示本地音频流
-        localAudio.srcObject = localStream;
-
-        // 创建本地 PeerConnection
-        const localPeerConnection = new RTCPeerConnection();
-        localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
-
-        // 创建远程 PeerConnection
-        const remotePeerConnection = new RTCPeerConnection();
-
-        // 当远程音频流到来时，设置远程音频源
-        remotePeerConnection.ontrack = (event) => {
-          remoteAudio.srcObject = event.streams[0];
-        };
-
-        // 信令部分：通过 localStorage 模拟信令交换
-        window.localStorage.setItem('localStream', localStream);
-
-        // 生成 offer
-        localPeerConnection.createOffer()
-          .then(offer => {
-            return localPeerConnection.setLocalDescription(offer);
-          })
-          .then(() => {
-            // 等待远端 answer
-            window.localStorage.setItem('offer', JSON.stringify(localPeerConnection.localDescription));
-          });
-
-        // 当 offer 被设置时，设置远端 SDP
-        window.addEventListener("storage", (event) => {
-          if (event.key === "offer" && !localPeerConnection.currentRemoteDescription) {
-            const offer = JSON.parse(localStorage.getItem('offer'));
-            remotePeerConnection.setRemoteDescription(new RTCSessionDescription(offer))
-              .then(() => remotePeerConnection.createAnswer())
-              .then(answer => remotePeerConnection.setLocalDescription(answer))
-              .then(() => {
-                window.localStorage.setItem('answer', JSON.stringify(remotePeerConnection.localDescription));
-              });
-          }
-
-          // 当 answer 被设置时，设置本地 SDP
-          if (event.key === "answer") {
-            const answer = JSON.parse(localStorage.getItem('answer'));
-            localPeerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-          }
-        });
-
-        // 交换 ICE候选
-        localPeerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            remotePeerConnection.addIceCandidate(event.candidate);
-          }
-        };
-
-        remotePeerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            localPeerConnection.addIceCandidate(event.candidate);
-          }
-        };
-      })
-      .catch(error => {
-        console.error("获取音频设备失败:", error);
-      });
-
-  </script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vite-project</title>
+    <script type="module" crossorigin src="/assets/index-KCyZgxwt.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DxAEXK9x.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
 </html>
